@@ -1,11 +1,11 @@
 # Summary: Program to generate an XML sitemap from a list of URLs 
 # Details: 
-# Last Modified: 20200228
+# Last Modified: 20200317
 # Modified by: JM
 
 ### import libraries
 
-import sys, os, argparse
+import sys, os, argparse, datetime
 
 ### define classes
 
@@ -18,6 +18,17 @@ class bcolors:
     ENDC = '\033[0m'
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
+
+def fnTimestamp():
+	##
+	# Summary: returns a timestamp
+	# Details: format: YYYYMMDDHHMMSS
+	# Last Modified: 20160926
+	# Modified by: JM
+	##
+
+	# return timestamp
+	return '{:%Y%m%d%H%M%S}'.format(datetime.datetime.now())
 
 def fnIsYes(inputString):
 	##
@@ -79,7 +90,7 @@ def main():
 
 	# clear screen (cross platform - cls for windows, clear for linux)
 	# os.system('cls' if os.name == 'nt' else 'clear')
-	os.system('clear')
+	#os.system('clear')
 	
 	print()
 
@@ -87,7 +98,8 @@ def main():
 	# initialize argument parser
 	parser = argparse.ArgumentParser()
 	# configure argument parser
-	parser.add_argument('-f','--file', help='File containing list of URLs.', required=True)
+	parser.add_argument('-f','--file', help='File containing list of URLs.', required=False)
+	parser.add_argument('-o','--output', help='Label for output file.', required=False)
 
 	# parse arguments
 	args = parser.parse_args()
@@ -95,18 +107,53 @@ def main():
 	# set environment variables
 	print(bcolors.HEADER + 'Script variables:'+ bcolors.ENDC)
 
+	# set run timestamp
+	time_stamp=fnTimestamp()
+	print('Timestamp: ' + time_stamp) 
+
 	# set current directory
 	current_directory=os.path.dirname(os.path.realpath(__file__))
 	print("Working directory: "+current_directory)
+	print()
 
-	# set input filename
-	input_filename = args.file
+	# get input filename
+	# was the input filename specified via command-line argument?
+	if args.file:
+		#print("An input filename argument was specified.")
+		# with the label indicated
+		input_filename=args.file
+		#print("The input filename was: " + args.file)
+	else:
+		# the input filename was not specified via command line
+		#print("No input filename argument.")
+		# get input filename from user
+		input_filename=input('Input file? (input-urls.txt): ')
+		# handle empty input filename - provide default
+		if input_filename=="": input_filename="input-urls.txt"
+
 	print('Input file: '+input_filename)
+	print()
+
+	# get output settings
+	# were the output settings specified via command-line argument?
+	if args.output:
+		#print("An output argument was specified.")
+		# with the label indicated
+		output_label=args.output
+		#print("The output argument was: " + args.output)
+	else:
+		# the output settings were not specified via command line
+		#print("No output argument.")
+		# get output file label from user
+		output_label=input('Output file label? ('+input_filename+'): ')
+
+	# handle empty output label - provide default
+	if output_label=="": output_label=input_filename
 
 	# set output filename
-	output_filename = "sitemap.xml"
-	print("Output file: " + output_filename)
+	output_filename = "_sitemap-results/sitemap-" + output_label + "-" + time_stamp + ".xml"
 
+	print("Output file: " + output_filename)
 	print()
 
 	if not fnIsYes(fnIfBlankDefaultValue(input('Continue? (Y/N) (Y): '),"y")):
@@ -143,7 +190,6 @@ def main():
 	output_text+='</urlset>'+'\n'
 
 	# print completed message
-	print()
 	print()
 	print(bcolors.OKBLUE + 'Process complete!' + bcolors.ENDC)
 	print()
